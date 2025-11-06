@@ -17,25 +17,62 @@ import java.util.List;
 public class UserDetailServiceimpl implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
+
+    /**
+     * Carga un usuario desde la base de datos a partir de su nombre de usuario
+     * y lo adapta al modelo de seguridad de Spring Security.
+     *
+     * <p>Este método se ejecuta automáticamente durante el proceso de autenticación.
+     * Se encarga de:</p>
+     * <ul>
+     *     <li>Buscar el usuario en la base de datos.</li>
+     *     <li>Convertir sus roles y permisos en autoridades reconocidas por Spring Security.</li>
+     *     <li>Devolver un objeto {@link org.springframework.security.core.userdetails.User}
+     *         que Spring usa para validar credenciales y gestionar la sesión.</li>
+     * </ul>
+     *
+     * @param username nombre de usuario a buscar.
+     * @return un objeto {@link org.springframework.security.core.userdetails.UserDetails}
+     *         con los datos y autoridades del usuario.
+     * @throws UsernameNotFoundException si el usuario no existe en la base de datos.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // --- Búsqueda del usuario ---
+        // Obtiene el usuario desde la base de datos según su nombre de usuario.
+        // Si no se encuentra, lanza una excepción manejada por Spring Security.
         UserEntity userEntity = userRepository.findUserEntityByUsername(username)
-                .orElseThrow(()->new UsernameNotFoundException(("El usuario "+username+" no existe!")));
-        //Spring maneja los permisos con esta clase por eso debemos mapear el user
+                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe!"));
+
+        // --- Conversión de roles y permisos a autoridades ---
+        // Spring Security utiliza GrantedAuthority para manejar roles y permisos.
         List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
-        //Para enviar los roles del usuario al simpleGrantedAuthority
-        userEntity.getRoles().forEach(role ->authorityList.add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
-        //Usamos programacion funcional para convertir el rol en un stream para recorrer dentro los permisos y añadirlo al simpleGranted
+
+        // Agrega los roles del usuario con el prefijo "ROLE_",
+        // requerido por convención en Spring Security.
+        userEntity.getRoles().forEach(role ->
+                authorityList.add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name())))
+        );
+
+        // Agrega los permisos asociados a cada rol.
+        // Se usa programación funcional para recorrer todos los permisos de todos los roles,
+        // y transformarlos en instancias de SimpleGrantedAuthority.
         userEntity.getRoles().stream()
-                .flatMap(role ->role.getPermisos().stream())
-                .forEach(permission ->authorityList.add(new SimpleGrantedAuthority(permission.getName())));
-        //Mapeamos todo a un User de Spring
-        return new User(userEntity.getUsername(),
+                .flatMap(role -> role.getPermisos().stream())
+                .forEach(permission ->
+                        authorityList.add(new SimpleGrantedAuthority(permission.getName()))
+                );
+
+        // --- Mapeo al modelo de seguridad de Spring ---
+        // Devuelve un objeto User con toda la información necesaria para la autenticación y autorización.
+        return new User(
+                userEntity.getUsername(),
                 userEntity.getPassword(),
-                userEntity.isEnabled(),
-                userEntity.isAccountNoExpired(),
-                userEntity.isCredentialNoExpired(),
-                userEntity.isAccountNoLocked(),
-                authorityList);
+                userEntity.isEnabled(),             // Cuenta habilitada
+                userEntity.isAccountNoExpired(),    // Cuenta no expirada
+                userEntity.isCredentialNoExpired(), // Credenciales válidas
+                userEntity.isAccountNoLocked(),     // Cuenta no bloqueada
+                authorityList                       // Lista de roles y permisos convertidos
+        );
     }
 }
