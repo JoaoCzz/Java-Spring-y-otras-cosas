@@ -5,13 +5,13 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Controlador de prueba para verificar la configuración de seguridad y autenticación.
  *
- * <p>Define endpoints básicos (GET, POST, PUT, DELETE, PATCH) bajo la ruta base <b>/auth</b>.
- * Cada endpoint puede requerir permisos o roles específicos según las reglas de
- * {@link org.springframework.security.access.prepost.PreAuthorize}.</p>
+ * Define endpoints básicos (GET, POST, PUT, DELETE, PATCH) bajo la ruta base "/auth".
+ * Cada endpoint puede requerir permisos o roles específicos según las reglas de seguridad
+ * definidas mediante la anotación @PreAuthorize.
  *
- * <p>La anotación {@code @PreAuthorize("denyAll()")} aplicada a nivel de clase
- * indica que, por defecto, todos los endpoints están denegados,
- * a menos que se indique lo contrario a nivel de método.</p>
+ * La anotación @PreAuthorize("denyAll()") aplicada a nivel de clase indica que,
+ * por defecto, todos los endpoints están denegados, a menos que se indique
+ * lo contrario en cada mét0do.
  */
 @RestController
 @RequestMapping("/auth")
@@ -20,9 +20,8 @@ import org.springframework.web.bind.annotation.*;
 public class TestAuthController {
     /**
      * Endpoint de prueba para solicitudes GET.
-     * <p>Requiere el permiso <b>READ</b>.</p>
+     * Requiere el permiso "READ".
      *
-     * @return un mensaje de texto simple.
      */
     @GetMapping("/get")
     @PreAuthorize("hasAuthority('READ')")
@@ -32,10 +31,9 @@ public class TestAuthController {
 
     /**
      * Endpoint de prueba para solicitudes POST.
-     * <p>No tiene restricción específica, pero hereda la política {@code denyAll()} de la clase,
-     * por lo que no será accesible a menos que se configure una excepción global.</p>
+     * No tiene restricción específica, por lo que hereda la política denyAll()
+     * y no será accesible a menos que se configure una excepción global.
      *
-     * @return un mensaje de texto simple.
      */
     @PostMapping("/post")
     public String helloPost() {
@@ -44,10 +42,9 @@ public class TestAuthController {
 
     /**
      * Endpoint de prueba para solicitudes PUT.
-     * <p>Actualmente no tiene restricción de acceso declarada, por lo que
-     * también se encuentra denegado por la política general {@code denyAll()}.</p>
+     * Actualmente no tiene restricción de acceso declarada,
+     * por lo tanto está denegado por la política general.
      *
-     * @return un mensaje de texto simple.
      */
     @PutMapping("/put")
     public String helloPut() {
@@ -56,9 +53,8 @@ public class TestAuthController {
 
     /**
      * Endpoint de prueba para solicitudes DELETE.
-     * <p>Sin reglas de acceso específicas, por lo tanto denegado por defecto.</p>
+     * Sin reglas de acceso específicas, por lo tanto denegado por defecto.
      *
-     * @return un mensaje de texto simple.
      */
     @DeleteMapping("/delete")
     public String helloDelete() {
@@ -67,9 +63,8 @@ public class TestAuthController {
 
     /**
      * Endpoint de prueba para solicitudes PATCH.
-     * <p>Requiere el permiso <b>REFACTOR</b> para poder acceder.</p>
+     * Requiere el permiso "REFACTOR" para poder acceder.
      *
-     * @return un mensaje de texto simple.
      */
     @PatchMapping("/patch")
     @PreAuthorize("hasAuthority('REFACTOR')")

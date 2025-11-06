@@ -22,18 +22,14 @@ public class UserDetailServiceimpl implements UserDetailsService {
      * Carga un usuario desde la base de datos a partir de su nombre de usuario
      * y lo adapta al modelo de seguridad de Spring Security.
      *
-     * <p>Este método se ejecuta automáticamente durante el proceso de autenticación.
-     * Se encarga de:</p>
-     * <ul>
-     *     <li>Buscar el usuario en la base de datos.</li>
-     *     <li>Convertir sus roles y permisos en autoridades reconocidas por Spring Security.</li>
-     *     <li>Devolver un objeto {@link org.springframework.security.core.userdetails.User}
-     *         que Spring usa para validar credenciales y gestionar la sesión.</li>
-     * </ul>
+     * Este método se ejecuta automáticamente durante el proceso de autenticación.
+     * Se encarga de:
+     *  - Buscar el usuario en la base de datos.
+     *  - Convertir sus roles y permisos en autoridades reconocidas por Spring Security.
+     *  - Devolver un objeto UserDetails que Spring usa para validar credenciales y gestionar la sesión.
      *
      * @param username nombre de usuario a buscar.
-     * @return un objeto {@link org.springframework.security.core.userdetails.UserDetails}
-     *         con los datos y autoridades del usuario.
+     * @return un objeto UserDetails con los datos y autoridades del usuario.
      * @throws UsernameNotFoundException si el usuario no existe en la base de datos.
      */
     @Override

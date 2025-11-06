@@ -25,31 +25,21 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.ArrayList;
 import java.util.List;
-/**
- * Configuración principal de seguridad para la aplicación.
- *
- * <p>Esta clase define la configuración global de Spring Security, incluyendo:</p>
- * <ul>
- *     <li>Política de sesiones.</li>
- *     <li>Gestión de autenticación y proveedores.</li>
- *     <li>Codificación de contraseñas.</li>
- *     <li>Uso de anotaciones {@code @PreAuthorize} para control granular de acceso.</li>
- * </ul>
- *
- * <p>Gracias a {@link EnableMethodSecurity}, se habilita la protección a nivel de método,
- * permitiendo anotar endpoints con reglas como {@code @PreAuthorize("hasAuthority('READ')")}.</p>
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // Permite usar anotaciones de seguridad como @PreAuthorize en controladores y servicios.
 public class SecurityConfig {
-    // ======================================================================
-    // EJEMPLO: CONFIGURACIÓN DE SEGURIDAD DETALLADA (COMENTADA)
-    // ======================================================================
-
     /*
-    // Esta configuración muestra cómo definir manualmente las condiciones de seguridad
-    // y los endpoints permitidos o restringidos.
+     * =============================================================
+     * EJEMPLO COMENTADO DE CONFIGURACIÓN DETALLADA DE SEGURIDAD
+     * =============================================================
+     *
+     * Esta configuración muestra cómo definir manualmente los endpoints
+     * protegidos, los públicos y la política de sesión.
+     * Actualmente está comentada porque se está utilizando el control
+     * de acceso mediante anotaciones (@PreAuthorize).
+     */
+    /*
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -77,13 +67,13 @@ public class SecurityConfig {
 
                     // --- Endpoints protegidos ---
                     http.requestMatchers(HttpMethod.GET, "/auth/get").hasAuthority("READ");
-                    http.requestMatchers(HttpMethod.POST, "/auth/post").denyAll(); // Denegado por política general
-                    http.requestMatchers(HttpMethod.PUT, "/auth/put").denyAll();   // Denegado por política general
-                    http.requestMatchers(HttpMethod.DELETE, "/auth/delete").denyAll(); // Denegado por política general
+                    http.requestMatchers(HttpMethod.POST, "/auth/post").denyAll(); // Denegado al no estar epecificada
+                    http.requestMatchers(HttpMethod.PUT, "/auth/put").denyAll();   // Denegado al no estar epecificada
+                    http.requestMatchers(HttpMethod.DELETE, "/auth/delete").denyAll(); // Denegado al no estar epecificada
                     http.requestMatchers(HttpMethod.PATCH, "/auth/patch").hasAuthority("REFACTOR");
 
                     // --- Endpoints no especificados ---
-                    // Todo lo demás estará denegado para todos los usuarios.
+                    // Cualquier otro endpoint queda denegado
                     http.anyRequest().denyAll();
                     // Alternativamente:
                     // http.anyRequest().authenticated(); // Solo usuarios autenticados pueden acceder.
@@ -92,26 +82,13 @@ public class SecurityConfig {
     }
     */
 
-    // ======================================================================
-    // CONFIGURACIÓN ACTIVA (USANDO ANOTACIONES @PreAuthorize)
-    // ======================================================================
-
-    /**
-     * Configuración principal del filtro de seguridad activo.
+    /*
+     * =============================================================
+     * CONFIGURACIÓN ACTIVA DE SEGURIDAD (USANDO ANOTACIONES)
+     * =============================================================
      *
-     * <p>Esta versión delega el control de permisos a las anotaciones de seguridad
-     * declaradas directamente en los endpoints o servicios.</p>
-     *
-     * <p>Características:</p>
-     * <ul>
-     *     <li>Deshabilita CSRF (solo necesario si no se usan formularios HTML).</li>
-     *     <li>Activa autenticación básica HTTP para pruebas.</li>
-     *     <li>Configura sesiones como <b>STATELESS</b> (sin almacenamiento de sesión).</li>
-     * </ul>
-     *
-     * @param httpSecurity objeto de configuración principal de seguridad HTTP.
-     * @return una instancia configurada de {@link SecurityFilterChain}.
-     * @throws Exception si ocurre un error durante la configuración.
+     * Esta versión delega el control de acceso a las anotaciones
+     * declaradas en controladores y servicios.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -123,31 +100,25 @@ public class SecurityConfig {
                 .build();
     }
 
-    // ======================================================================
-    // CONFIGURACIÓN DE AUTENTICACIÓN
-    // ======================================================================
-
-    /**
-     * Proporciona el {@link AuthenticationManager} encargado de procesar
-     * la autenticación de usuarios.
+    /*
+     * =============================================================
+     * GESTOR DE AUTENTICACIÓN
+     * =============================================================
      *
-     * @param authenticationConfiguration configuración de autenticación de Spring.
-     * @return el {@link AuthenticationManager} configurado.
-     * @throws Exception en caso de error al obtener el administrador.
+     * Encargado de manejar el proceso de autenticación de usuarios.
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    /**
-     * Configura el proveedor de autenticación basado en acceso a datos (DAO).
+    /*
+     * =============================================================
+     * PROVEEDOR DE AUTENTICACIÓN (DAO)
+     * =============================================================
      *
-     * <p>Este provider conecta con la base de datos mediante un servicio personalizado
-     * que implementa {@link org.springframework.security.core.userdetails.UserDetailsService}.</p>
-     *
-     * @param userDetailServiceimpl implementación del servicio de usuarios.
-     * @return un {@link AuthenticationProvider} configurado.
+     * Conecta el servicio de usuarios con la lógica de autenticación
+     * y valida credenciales desde la base de datos.
      */
     @Bean
     public AuthenticationProvider authenticationProvider(UserDetailServiceimpl userDetailServiceimpl) {
@@ -157,17 +128,13 @@ public class SecurityConfig {
         return provider;
     }
 
-    // ======================================================================
-    // CONFIGURACIÓN DE PASSWORD ENCODER
-    // ======================================================================
-
-    /**
-     * Define el codificador de contraseñas.
+    /*
+     * =============================================================
+     * CODIFICADOR DE CONTRASEÑAS
+     * =============================================================
      *
-     * <p>Para pruebas, puede usarse {@code NoOpPasswordEncoder}, aunque se recomienda
-     * siempre {@link BCryptPasswordEncoder} en entornos reales.</p>
-     *
-     * @return una instancia de {@link PasswordEncoder}.
+     * Define el algoritmo para codificar contraseñas.
+     * BCrypt es el recomendado por Spring Security.
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -178,15 +145,18 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // ======================================================================
-    // EJEMPLO OPCIONAL: USUARIOS EN MEMORIA (COMENTADO)
-    // ======================================================================
-
+    /*
+     * =============================================================
+     * USUARIOS EN MEMORIA (EJEMPLO OPCIONAL)
+     * =============================================================
+     *
+     * Ejemplo de cómo definir usuarios directamente en memoria.
+     * Se recomienda solo para pruebas locales.
+     * En producción se recomienda cargar usuarios desde una base de datos.
+     */
     /*
     @Bean
     public UserDetailsService userDetailsService() {
-        // Ejemplo de configuración en memoria.
-        // En producción se recomienda cargar usuarios desde una base de datos.
 
         List<UserDetails> userDetailsList = new ArrayList<>();
 
