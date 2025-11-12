@@ -1,2 +1,0 @@
-Las apis streams funcionan con expresiones lambdas por ende aqui estan las expresiones:
-
